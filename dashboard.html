@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Guardian SA</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><path d=%22M16 2 L28 7 V15 C28 22.5 22.8 27.8 16 30 C9.2 27.8 4 22.5 4 15 V7 Z%22 fill=%22%230F766E%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<style>
+  .dash-wrap { padding: var(--space-6) 0 var(--space-8); }
+  .dash-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3); margin-bottom: var(--space-6); }
+  .dash-head h1 { font-size: 1.7rem; }
+  .dash-grid {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: var(--space-5);
+  }
+  @media (max-width: 900px) { .dash-grid { grid-template-columns: 1fr; } }
+
+  .col { display: flex; flex-direction: column; gap: var(--space-5); }
+
+  /* SOS card */
+  .sos-card { text-align: center; padding: var(--space-7) var(--space-5); position: relative; overflow: hidden; }
+  .sos-btn-wrap { position: relative; width: 140px; height: 140px; margin: var(--space-5) auto; display: flex; align-items: center; justify-content: center; }
+  .sos-ring { position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--color-alert); opacity: 0; }
+  .sos-btn {
+    width: 120px; height: 120px; border-radius: 50%;
+    background: var(--color-alert);
+    color: white;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    box-shadow: 0 8px 24px rgba(220,38,38,0.35);
+    position: relative; z-index: 1;
+    transition: transform 0.1s ease;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .sos-btn:active { transform: scale(0.96); }
+  .sos-btn svg { width: 30px; height: 30px; margin-bottom: 4px; }
+  .sos-btn span { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em; }
+  .sos-progress {
+    position: absolute; inset: -6px;
+    border-radius: 50%;
+  }
+  .sos-progress circle { fill: none; stroke-width: 4; }
+  .sos-progress .track { stroke: var(--color-border); }
+  .sos-progress .fill { stroke: var(--color-alert); stroke-linecap: round; transform: rotate(-90deg); transform-origin: center; transition: stroke-dashoffset 0.05s linear; }
+  .sos-hint { font-size: 0.85rem; color: var(--color-mist); margin-top: var(--space-2); }
+  .sos-hint strong { color: var(--color-ink); }
+
+  /* Stat row */
+  .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); }
+  .stat-mini { padding: var(--space-4); text-align: center; }
+  .stat-mini .num { font-family: var(--font-display); font-weight: 800; font-size: 1.5rem; color: var(--color-primary); }
+  .stat-mini .lbl { font-size: 0.78rem; color: var(--color-mist); margin-top: 4px; }
+
+  /* Location card */
+  .loc-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
+  .loc-status { display: flex; align-items: center; gap: var(--space-2); font-weight: 700; color: var(--color-primary); font-size: 0.92rem; }
+  .loc-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--color-success); box-shadow: 0 0 0 4px rgba(22,163,74,0.15); }
+
+  /* Toggle switch */
+  .switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .switch-track { position: absolute; inset: 0; background: var(--color-border); border-radius: 999px; transition: background 0.2s ease; cursor: pointer; }
+  .switch-track::after { content: ""; position: absolute; width: 18px; height: 18px; border-radius: 50%; background: white; top: 3px; left: 3px; transition: transform 0.2s ease; box-shadow: var(--shadow-sm); }
+  .switch input:checked + .switch-track { background: var(--color-primary); }
+  .switch input:checked + .switch-track::after { transform: translateX(20px); }
+
+  /* Contacts / activity list rows */
+  .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); }
+  .card-head h3 { font-size: 1.02rem; }
+  .card-head a { font-size: 0.85rem; font-weight: 700; color: var(--color-primary); }
+  .list-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: 1px solid var(--color-border); }
+  .list-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--color-surface); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; flex-shrink: 0; }
+  .list-row .meta { flex: 1; min-width: 0; }
+  .list-row .meta .title { font-weight: 600; font-size: 0.92rem; }
+  .list-row .meta .sub { font-size: 0.8rem; color: var(--color-mist); }
+
+  /* Modal SOS flow */
+  .flow-steps { list-style: none; margin: var(--space-5) 0; display: flex; flex-direction: column; gap: var(--space-3); }
+  .flow-steps li { display: flex; align-items: center; gap: var(--space-3); font-size: 0.92rem; color: var(--color-mist); }
+  .flow-steps li .dot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--color-border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .flow-steps li.active { color: var(--color-ink); font-weight: 700; }
+  .flow-steps li.active .dot { border-color: var(--color-alert); background: var(--color-alert); }
+  .flow-steps li.done .dot { border-color: var(--color-primary); background: var(--color-primary); }
+  .flow-steps li.active .dot svg, .flow-steps li.done .dot svg { width: 12px; height: 12px; color: white; }
+</style>
+</head>
+<body>
+<div id="nav-mount"></div>
+
+<main class="dash-wrap">
+  <div class="container">
+
+    <div id="dash-skeleton" data-skeleton>
+      <div class="skeleton skel-title" style="width:280px;"></div>
+      <div class="dash-grid mt-5">
+        <div class="col">
+          <div class="skeleton skel-card" style="height:320px;"></div>
+          <div class="skeleton skel-card"></div>
+        </div>
+        <div class="col">
+          <div class="skeleton skel-card" style="height:160px;"></div>
+          <div class="skeleton skel-card" style="height:200px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="dash-content" hidden>
+      <div class="dash-head">
+        <div>
+          <h1 id="welcome-heading">Welcome back</h1>
+          <p class="muted">Here's your Guardian SA overview.</p>
+        </div>
+        <span class="badge" id="plan-badge">Free</span>
+      </div>
+
+      <div class="dash-grid">
+        <div class="col">
+          <div class="card sos-card">
+            <span class="eyebrow">Emergency SOS</span>
+            <div class="sos-btn-wrap">
+              <svg class="sos-progress" viewBox="0 0 128 128" width="140" height="140">
+                <circle class="track" cx="64" cy="64" r="58"></circle>
+                <circle class="fill" id="sos-progress-fill" cx="64" cy="64" r="58" stroke-dasharray="364" stroke-dashoffset="364"></circle>
+              </svg>
+              <button class="sos-btn" id="sos-btn" aria-label="Hold for 5 seconds to trigger SOS">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 L4 6 v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V6z"/></svg>
+                <span>HOLD 5s</span>
+              </button>
+            </div>
+            <p class="sos-hint">Press and hold the power button — or this button — for <strong>5 seconds</strong> to trigger an SOS alert. This is a simulation; nothing real is dispatched.</p>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h3>Trusted contacts</h3><a href="contacts.html">Manage all →</a></div>
+            <div id="contacts-preview"></div>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="card">
+            <div class="stat-row">
+              <div class="stat-mini"><div class="num" id="stat-alerts">0</div><div class="lbl">Alerts sent</div></div>
+              <div class="stat-mini"><div class="num" id="stat-contacts">0</div><div class="lbl">Contacts</div></div>
+              <div class="stat-mini"><div class="num" id="stat-since">—</div><div class="lbl">Member since</div></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h3>Live location sharing</h3></div>
+            <div class="loc-row">
+              <span class="loc-status"><span class="loc-dot"></span> <span id="loc-status-text">Active</span></span>
+              <label class="switch">
+                <input type="checkbox" id="loc-toggle" checked>
+                <span class="switch-track"></span>
+              </label>
+            </div>
+            <p class="field-hint mt-2">When on, your location is shared automatically the moment an SOS is triggered.</p>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h3>Your plan</h3><a href="plans.html">Manage →</a></div>
+            <p class="muted" style="font-size:0.9rem;" id="plan-summary-text">Loading plan details…</p>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h3>Recent activity</h3><a href="history.html">View all →</a></div>
+            <div id="activity-preview"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- SOS flow modal -->
+<div class="overlay" id="sos-overlay">
+  <div class="modal">
+    <div class="text-center">
+      <span class="badge" style="background:var(--color-alert-soft); color:var(--color-alert);">SOS Triggered</span>
+      <h2 class="mt-3" style="font-size:1.3rem;">Running the emergency flow…</h2>
+    </div>
+    <ul class="flow-steps" id="flow-steps">
+      <li data-step="Trigger"><span class="dot"></span> Trigger — SOS activated</li>
+      <li data-step="Locate"><span class="dot"></span> Locate — sharing live GPS location</li>
+      <li data-step="Connect"><span class="dot"></span> Connect — response centre calling back</li>
+      <li data-step="Notify"><span class="dot"></span> Notify — alerting trusted contacts</li>
+      <li data-step="Record"><span class="dot"></span> Record — audio &amp; video capture started</li>
+      <li data-step="Dispatch"><span class="dot"></span> Dispatch — nearest responder notified</li>
+    </ul>
+    <button class="btn btn-ghost btn-block" id="sos-cancel-btn">Cancel demo alert</button>
+  </div>
+</div>
+
+<div id="footer-mount"></div>
+
+<script src="js/db.js"></script>
+<script src="js/ui.js"></script>
+<script>
+  const user = requireAuth();
+
+  if (user) {
+    document.getElementById('welcome-heading').textContent = `Welcome back, ${user.name.split(' ')[0]}`;
+
+    const badge = document.getElementById('plan-badge');
+    badge.textContent = user.plan;
+    badge.classList.add(user.plan === 'Free' ? 'badge-free' : user.plan === 'Premium' ? 'badge-premium' : 'badge-family');
+
+    const plan = PLAN_DETAILS[user.plan];
+    document.getElementById('plan-summary-text').innerHTML =
+      `<strong style="color:var(--color-ink)">${user.plan}</strong> — ${plan.tagline} ${plan.price === 'R0/mo' ? '' : `<span class="muted">(${plan.price})</span>`}`;
+
+    const contacts = getContacts(user.email);
+    const history = getHistory(user.email);
+
+    document.getElementById('stat-alerts').textContent = history.filter(h => h.type === 'SOS Alert').length;
+    document.getElementById('stat-contacts').textContent = contacts.length;
+    document.getElementById('stat-since').textContent = new Date(user.createdAt).toLocaleDateString('en-ZA', { month: 'short', year: 'numeric' });
+
+    // Contacts preview
+    const contactsPreview = document.getElementById('contacts-preview');
+    if (contacts.length === 0) {
+      contactsPreview.innerHTML = `<div class="empty-state" style="padding:var(--space-5) 0;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        <p>No trusted contacts yet.</p>
+        <a href="contacts.html" class="btn btn-primary btn-sm mt-3">Add a contact</a>
+      </div>`;
+    } else {
+      contactsPreview.innerHTML = contacts.slice(0, 3).map(c => `
+        <div class="list-row">
+          <div class="avatar">${c.name.trim().charAt(0).toUpperCase()}</div>
+          <div class="meta"><div class="title">${c.name}</div><div class="sub">${c.phone}</div></div>
+        </div>
+      `).join('');
+    }
+
+    // Activity preview
+    const activityPreview = document.getElementById('activity-preview');
+    if (history.length === 0) {
+      activityPreview.innerHTML = `<div class="empty-state" style="padding:var(--space-5) 0;"><p>No activity yet.</p></div>`;
+    } else {
+      activityPreview.innerHTML = history.slice(0, 2).map(h => `
+        <div class="list-row">
+          <div class="avatar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 L4 6 v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V6z"/></svg></div>
+          <div class="meta"><div class="title">${h.type} · ${h.location}</div><div class="sub">${new Date(h.date).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' })} — ${h.status}</div></div>
+        </div>
+      `).join('');
+    }
+
+    // Location toggle
+    const locToggle = document.getElementById('loc-toggle');
+    const locStatusText = document.getElementById('loc-status-text');
+    locToggle.checked = user.settings?.gpsSharing !== false;
+    locStatusText.textContent = locToggle.checked ? 'Active' : 'Off';
+    locToggle.addEventListener('change', () => {
+      updateUser(user.email, { settings: { ...user.settings, gpsSharing: locToggle.checked } });
+      locStatusText.textContent = locToggle.checked ? 'Active' : 'Off';
+      showToast('success', 'Preference saved', `Live location sharing turned ${locToggle.checked ? 'on' : 'off'}.`);
+    });
+
+    revealContent('#dash-content', { skeletonSelector: '#dash-skeleton', delay: 500 });
+  }
+
+  mountNavAndFooter('dashboard');
+
+  /* ---------- SOS: hold-5-seconds interaction ---------- */
+  const sosBtn = document.getElementById('sos-btn');
+  const progressFill = document.getElementById('sos-progress-fill');
+  const CIRCUMFERENCE = 364;
+  let holdTimer = null;
+  let holdStart = null;
+  const HOLD_MS = 5000;
+
+  function updateProgress() {
+    const elapsed = Date.now() - holdStart;
+    const pct = Math.min(elapsed / HOLD_MS, 1);
+    progressFill.style.strokeDashoffset = CIRCUMFERENCE * (1 - pct);
+    if (pct >= 1) {
+      cancelAnimationFrame(holdTimer);
+      triggerSOS();
+    } else {
+      holdTimer = requestAnimationFrame(updateProgress);
+    }
+  }
+  function startHold() {
+    if (!user) return;
+    holdStart = Date.now();
+    holdTimer = requestAnimationFrame(updateProgress);
+  }
+  function cancelHold() {
+    cancelAnimationFrame(holdTimer);
+    progressFill.style.strokeDashoffset = CIRCUMFERENCE;
+  }
+  sosBtn.addEventListener('mousedown', startHold);
+  sosBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startHold(); }, { passive: false });
+  ['mouseup', 'mouseleave', 'touchend', 'touchcancel'].forEach(ev => sosBtn.addEventListener(ev, cancelHold));
+
+  const sosOverlay = document.getElementById('sos-overlay');
+  const flowSteps = document.querySelectorAll('#flow-steps li');
+  let flowInterval = null;
+
+  function triggerSOS() {
+    sosOverlay.classList.add('open');
+    let i = 0;
+    flowSteps.forEach(s => s.classList.remove('active', 'done'));
+    function advance() {
+      if (i > 0) flowSteps[i - 1].classList.remove('active');
+      if (i > 0) flowSteps[i - 1].classList.add('done');
+      flowSteps[i - 1] && (flowSteps[i - 1].querySelector('.dot').innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>');
+      if (i < flowSteps.length) {
+        flowSteps[i].classList.add('active');
+        i++;
+        flowInterval = setTimeout(advance, 700);
+      } else {
+        setTimeout(() => {
+          sosOverlay.classList.remove('open');
+          progressFill.style.strokeDashoffset = CIRCUMFERENCE;
+          if (user) {
+            addHistoryEntry(user.email, {
+              id: crypto.randomUUID(), type: 'SOS Alert', status: 'Resolved (demo)',
+              location: 'Current location (simulated)', date: new Date().toISOString(),
+              summary: 'Full SOS flow completed via 5-second hold trigger.',
+            });
+            showToast('success', 'Demo alert resolved', 'The simulated SOS flow completed. This entry was added to your history.');
+          }
+        }, 900);
+      }
+    }
+    advance();
+  }
+
+  document.getElementById('sos-cancel-btn').addEventListener('click', () => {
+    clearTimeout(flowInterval);
+    sosOverlay.classList.remove('open');
+    progressFill.style.strokeDashoffset = CIRCUMFERENCE;
+    showToast('info', 'Alert cancelled', 'The demo SOS flow was cancelled.');
+  });
+</script>
+</body>
+</html>

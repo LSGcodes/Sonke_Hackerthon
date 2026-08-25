@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About — Guardian SA</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><path d=%22M16 2 L28 7 V15 C28 22.5 22.8 27.8 16 30 C9.2 27.8 4 22.5 4 15 V7 Z%22 fill=%22%230F766E%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<style>
+  .page-wrap { padding: var(--space-7) 0 var(--space-8); }
+  .about-head { max-width: 640px; margin: 0 auto var(--space-7); text-align: center; }
+  .about-head h1 { font-size: 2.1rem; margin: var(--space-3) 0; }
+  .about-head p { color: var(--color-ink-soft); }
+  .breakdown-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-4); max-width: 860px; margin: 0 auto var(--space-8); }
+  @media (max-width: 700px) { .breakdown-grid { grid-template-columns: 1fr; } }
+  .breakdown-card h3 { font-size: 1rem; margin-bottom: var(--space-2); }
+  .breakdown-card p { font-size: 0.9rem; color: var(--color-ink-soft); }
+  .compare-table { max-width: 860px; margin: 0 auto; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--color-border); }
+  th { font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-mist); }
+  tr.highlight td { background: var(--color-surface); font-weight: 600; }
+  .roadmap { max-width: 860px; margin: var(--space-8) auto 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); }
+  @media (max-width: 700px) { .roadmap { grid-template-columns: 1fr; } }
+  .roadmap .card h4 { font-size: 0.95rem; margin-bottom: var(--space-2); }
+  .roadmap .card p { font-size: 0.85rem; color: var(--color-ink-soft); }
+  .section-eyebrow { text-align: center; margin-bottom: var(--space-5); }
+</style>
+</head>
+<body>
+<div id="nav-mount"></div>
+
+<main class="page-wrap">
+  <div class="container">
+    <div class="about-head" data-lazy>
+      <span class="eyebrow">The Problem</span>
+      <h1>Help doesn't arrive fast enough.</h1>
+      <p>Across South Africa, slow or uncertain emergency response to crime, medical incidents, fires and road accidents costs lives. Many people don't know who to call, call centres are understaffed, and there's no easy way to alert family, neighbours or responders in real time.</p>
+    </div>
+
+    <div class="breakdown-grid" data-lazy>
+      <div class="card breakdown-card">
+        <h3>Who do you call?</h3>
+        <p>People don't know who to contact first in a crisis — family, police or neighbours — losing critical seconds to confusion.</p>
+      </div>
+      <div class="card breakdown-card">
+        <h3>Slow response times</h3>
+        <p>Emergency response times are slow and unpredictable, leaving victims vulnerable while help is still en route.</p>
+      </div>
+      <div class="card breakdown-card">
+        <h3>No simultaneous alerts</h3>
+        <p>There's no easy way to notify family, neighbours and emergency responders all at once with a single action.</p>
+      </div>
+      <div class="card breakdown-card">
+        <h3>Evidence is lost</h3>
+        <p>Critical audio, video and location data disappears in the chaos, making post-incident documentation nearly impossible.</p>
+      </div>
+    </div>
+
+    <div class="section-eyebrow" data-lazy>
+      <span class="eyebrow">Market Landscape</span>
+      <h2 class="mt-2" style="font-size:1.6rem;">A proven category, still wide open</h2>
+      <p class="muted mt-2" style="max-width:600px; margin:8px auto 0;">Namola has passed 700,000 downloads — roughly 1% of SA's adult population — and partners with, rather than competes on, AI detection and evidence capture.</p>
+    </div>
+
+    <div class="compare-table card" data-lazy>
+      <table>
+        <thead><tr><th>Player</th><th>Reach</th><th>Core mechanism</th><th>Gap we fill</th></tr></thead>
+        <tbody>
+          <tr><td>Namola</td><td>700,000+ downloads</td><td>In-app SOS + 24/7 call-back centre</td><td>No native AI threat detection or auto evidence capture</td></tr>
+          <tr><td>Gauteng e-Panic Button</td><td>Provincial government app</td><td>Standalone panic button to private response</td><td>Limited to Gauteng residents; no family/community layer</td></tr>
+          <tr><td>mySOS</td><td>Niche (estates, sport)</td><td>Panic button + "Track Me"</td><td>Not built around power-button trigger or AI</td></tr>
+          <tr class="highlight"><td>Guardian SA</td><td>National, phone-agnostic</td><td>One-tap + power-button, AI, evidence, B2B marketplace</td><td>Differentiated on trigger flexibility + monetisation</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section-eyebrow mt-6" data-lazy>
+      <span class="eyebrow">Our Vision</span>
+      <h2 class="mt-2" style="font-size:1.6rem;">Every South African, one tap from help</h2>
+    </div>
+    <div class="roadmap" data-lazy>
+      <div class="card"><h4>Phase 1</h4><p>Launch in Gauteng & Western Cape metros; onboard private-security dispatch partners.</p></div>
+      <div class="card"><h4>Phase 2</h4><p>National rollout; hospital & insurer partnerships; AI threat detection live.</p></div>
+      <div class="card"><h4>Phase 3</h4><p>Expand into other Southern African markets facing similar response gaps.</p></div>
+    </div>
+
+    <div class="text-center mt-8" data-lazy>
+      <a href="signup.html" class="btn btn-primary">Join Guardian SA</a>
+    </div>
+  </div>
+</main>
+
+<div id="footer-mount"></div>
+
+<script src="js/db.js"></script>
+<script src="js/ui.js"></script>
+<script>mountNavAndFooter('about');</script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Page not found — Guardian SA</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><path d=%22M16 2 L28 7 V15 C28 22.5 22.8 27.8 16 30 C9.2 27.8 4 22.5 4 15 V7 Z%22 fill=%22%230F766E%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<style>
+  .err-wrap { min-height: calc(100vh - 130px); display: flex; align-items: center; justify-content: center; padding: var(--space-6) var(--space-4); text-align: center; }
+  .err-code { font-family: var(--font-display); font-weight: 800; font-size: 5rem; color: var(--color-surface); -webkit-text-stroke: 2px var(--color-primary); line-height: 1; }
+  .err-wrap h1 { font-size: 1.6rem; margin: var(--space-4) 0 var(--space-2); }
+  .err-wrap p { color: var(--color-ink-soft); max-width: 420px; margin: 0 auto var(--space-6); }
+  .err-actions { display: flex; gap: var(--space-3); justify-content: center; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div id="nav-mount"></div>
+
+<main class="err-wrap">
+  <div>
+    <div class="err-code">404</div>
+    <h1>This page went off the grid.</h1>
+    <p>We couldn't find the page you were looking for. Nothing else on Guardian SA was affected — you can keep navigating from here.</p>
+    <div class="err-actions">
+      <a href="index.html" class="btn btn-primary">Back to home</a>
+      <a href="dashboard.html" class="btn btn-ghost">Go to dashboard</a>
+    </div>
+  </div>
+</main>
+
+<div id="footer-mount"></div>
+
+<script src="js/db.js"></script>
+<script src="js/ui.js"></script>
+<script>mountNavAndFooter('404');</script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plans — Guardian SA</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><path d=%22M16 2 L28 7 V15 C28 22.5 22.8 27.8 16 30 C9.2 27.8 4 22.5 4 15 V7 Z%22 fill=%22%230F766E%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<style>
+  .page-wrap { padding: var(--space-6) 0 var(--space-8); }
+  .page-head { text-align: center; max-width: 520px; margin: 0 auto var(--space-7); }
+  .page-head h1 { font-size: 2rem; margin-bottom: var(--space-2); }
+  .plans-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-5); max-width: 980px; margin: 0 auto; }
+  @media (max-width: 860px) { .plans-grid { grid-template-columns: 1fr; max-width: 420px; } }
+  .plan-card { padding: var(--space-6); display: flex; flex-direction: column; position: relative; }
+  .plan-card.featured { border: 2px solid var(--color-primary); box-shadow: var(--shadow-md); }
+  .plan-card .flag { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--color-primary); color: white; font-size: 0.72rem; font-weight: 700; padding: 4px 14px; border-radius: var(--radius-full); text-transform: uppercase; letter-spacing: 0.04em; }
+  .plan-price { font-family: var(--font-display); font-weight: 800; font-size: 2rem; margin: var(--space-3) 0 var(--space-1); }
+  .plan-tagline { color: var(--color-ink-soft); font-size: 0.9rem; margin-bottom: var(--space-5); }
+  .plan-card ul { list-style: none; font-size: 0.9rem; color: var(--color-ink-soft); flex: 1; margin-bottom: var(--space-5); }
+  .plan-card li { padding: 7px 0; display: flex; gap: 8px; align-items: flex-start; }
+  .plan-card li svg { width: 17px; height: 17px; color: var(--color-primary); flex-shrink: 0; margin-top: 2px; }
+  .plan-card .btn { width: 100%; }
+  .plan-card.current { background: var(--color-surface); }
+</style>
+</head>
+<body>
+<div id="nav-mount"></div>
+
+<main class="page-wrap">
+  <div class="container">
+    <div id="plans-skeleton" data-skeleton>
+      <div class="skeleton skel-title" style="margin: 0 auto 40px; width:300px;"></div>
+      <div class="plans-grid">
+        <div class="skeleton skel-card" style="height:380px;"></div>
+        <div class="skeleton skel-card" style="height:380px;"></div>
+        <div class="skeleton skel-card" style="height:380px;"></div>
+      </div>
+    </div>
+
+    <div id="plans-content" hidden>
+      <div class="page-head">
+        <span class="eyebrow">Subscription plans</span>
+        <h1>Protection that grows with you</h1>
+        <p class="muted">Upgrade or downgrade any time — changes apply immediately.</p>
+      </div>
+      <div class="plans-grid" id="plans-grid"></div>
+    </div>
+  </div>
+</main>
+
+<!-- Confirm switch modal -->
+<div class="overlay" id="confirm-overlay">
+  <div class="modal">
+    <h2 style="font-size:1.2rem;">Switch to <span id="confirm-plan-name"></span>?</h2>
+    <p class="muted mt-2" id="confirm-plan-detail"></p>
+    <div class="mt-5" style="display:flex; gap:12px;">
+      <button class="btn btn-ghost btn-block" id="confirm-cancel">Cancel</button>
+      <button class="btn btn-primary btn-block" id="confirm-ok">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div id="footer-mount"></div>
+
+<script src="js/db.js"></script>
+<script src="js/ui.js"></script>
+<script>
+  const user = getCurrentUser();
+  const plansGrid = document.getElementById('plans-grid');
+  const iconCheck = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`;
+  let pendingPlan = null;
+
+  function renderPlans() {
+    plansGrid.innerHTML = Object.entries(PLAN_DETAILS).map(([name, plan]) => {
+      const isCurrent = user && user.plan === name;
+      const isFeatured = name === 'Premium';
+      return `
+        <div class="card plan-card ${isFeatured ? 'featured' : ''} ${isCurrent ? 'current' : ''}">
+          ${isFeatured ? '<span class="flag">Most popular</span>' : ''}
+          <span class="badge badge-${name.toLowerCase()}">${name}</span>
+          <div class="plan-price">${plan.price}</div>
+          <p class="plan-tagline">${plan.tagline}</p>
+          <ul>${plan.features.map(f => `<li>${iconCheck}${f}</li>`).join('')}</ul>
+          ${
+            !user
+              ? `<a href="signup.html" class="btn btn-primary">Get started</a>`
+              : isCurrent
+                ? `<button class="btn btn-ghost" disabled>Current plan</button>`
+                : `<button class="btn ${isFeatured ? 'btn-primary' : 'btn-ghost'}" data-plan="${name}">Switch to ${name}</button>`
+          }
+        </div>
+      `;
+    }).join('');
+
+    plansGrid.querySelectorAll('button[data-plan]').forEach(btn => {
+      btn.addEventListener('click', () => openConfirm(btn.getAttribute('data-plan')));
+    });
+  }
+
+  const overlay = document.getElementById('confirm-overlay');
+  function openConfirm(planName) {
+    pendingPlan = planName;
+    document.getElementById('confirm-plan-name').textContent = planName;
+    document.getElementById('confirm-plan-detail').textContent = `You'll move from ${user.plan} to ${planName} (${PLAN_DETAILS[planName].price}).`;
+    overlay.classList.add('open');
+  }
+  document.getElementById('confirm-cancel').addEventListener('click', () => overlay.classList.remove('open'));
+  document.getElementById('confirm-ok').addEventListener('click', () => {
+    updateUser(user.email, { plan: pendingPlan });
+    overlay.classList.remove('open');
+    showToast('success', 'Plan updated', `You're now on the ${pendingPlan} plan.`);
+    location.reload();
+  });
+
+  renderPlans();
+  mountNavAndFooter('plans');
+  revealContent('#plans-content', { skeletonSelector: '#plans-skeleton', delay: 400 });
+</script>
+</body>
+</html>

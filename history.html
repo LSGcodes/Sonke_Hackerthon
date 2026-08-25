@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>History — Guardian SA</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><path d=%22M16 2 L28 7 V15 C28 22.5 22.8 27.8 16 30 C9.2 27.8 4 22.5 4 15 V7 Z%22 fill=%22%230F766E%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<style>
+  .page-wrap { padding: var(--space-6) 0 var(--space-8); max-width: 720px; margin: 0 auto; }
+  .page-head { margin-bottom: var(--space-6); }
+  .page-head h1 { font-size: 1.7rem; margin-bottom: var(--space-1); }
+  .hist-item { display: flex; gap: var(--space-4); padding: var(--space-5) 0; border-bottom: 1px solid var(--color-border); }
+  .hist-item:last-child { border-bottom: none; }
+  .hist-icon { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .hist-icon svg { width: 20px; height: 20px; }
+  .hist-icon.sos { background: var(--color-alert-soft); color: var(--color-alert); }
+  .hist-icon.drill { background: var(--color-surface); color: var(--color-primary); }
+  .hist-icon.false { background: var(--color-amber-soft); color: var(--color-amber); }
+  .hist-body { flex: 1; }
+  .hist-top { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
+  .hist-top h3 { font-size: 0.98rem; }
+  .hist-date { font-size: 0.8rem; color: var(--color-mist); font-family: var(--font-mono); }
+  .hist-loc { font-size: 0.85rem; color: var(--color-ink-soft); margin: 4px 0; }
+  .hist-summary { font-size: 0.85rem; color: var(--color-mist); }
+  .status-pill { font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: var(--radius-full); text-transform: uppercase; }
+  .status-resolved { background: #ECFDF5; color: var(--color-success); }
+  .status-closed { background: var(--color-surface); color: var(--color-mist); }
+</style>
+</head>
+<body>
+<div id="nav-mount"></div>
+
+<main class="page-wrap">
+  <div id="hist-skeleton" data-skeleton>
+    <div class="skeleton skel-title"></div>
+    <div class="skeleton skel-card mt-5" style="height:340px;"></div>
+  </div>
+
+  <div id="hist-content" hidden>
+    <div class="page-head">
+      <h1>Incident history</h1>
+      <p class="muted">A record of alerts and drills tied to your account.</p>
+    </div>
+    <div class="card" id="history-list"></div>
+  </div>
+</main>
+
+<div id="footer-mount"></div>
+
+<script src="js/db.js"></script>
+<script src="js/ui.js"></script>
+<script>
+  const user = requireAuth();
+
+  if (user) {
+    const history = getHistory(user.email);
+    const list = document.getElementById('history-list');
+
+    const iconFor = (type) => {
+      if (type === 'SOS Alert') return { cls: 'sos', svg: `<path d="M12 2 L4 6 v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V6z"/>` };
+      if (type === 'Drill') return { cls: 'drill', svg: `<polyline points="20 6 9 17 4 12"/>` };
+      return { cls: 'false', svg: `<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>` };
+    };
+
+    if (history.length === 0) {
+      list.innerHTML = `<div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <p>No incidents recorded yet. Your SOS activity will appear here.</p>
+      </div>`;
+    } else {
+      list.innerHTML = history.map(h => {
+        const icon = iconFor(h.type);
+        const statusClass = h.status.toLowerCase().includes('resolved') ? 'status-resolved' : 'status-closed';
+        return `
+          <div class="hist-item">
+            <div class="hist-icon ${icon.cls}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${icon.svg}</svg></div>
+            <div class="hist-body">
+              <div class="hist-top">
+                <h3>${h.type}</h3>
+                <span class="status-pill ${statusClass}">${h.status}</span>
+              </div>
+              <div class="hist-loc">${h.location}</div>
+              <div class="hist-date">${new Date(h.date).toLocaleString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
+              <p class="hist-summary mt-2">${h.summary}</p>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    revealContent('#hist-content', { skeletonSelector: '#hist-skeleton', delay: 400 });
+  }
+
+  mountNavAndFooter('history');
+</script>
+</body>
+</html>

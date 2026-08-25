@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trusted contacts — Guardian SA</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><path d=%22M16 2 L28 7 V15 C28 22.5 22.8 27.8 16 30 C9.2 27.8 4 22.5 4 15 V7 Z%22 fill=%22%230F766E%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<style>
+  .page-wrap { padding: var(--space-6) 0 var(--space-8); max-width: 640px; margin: 0 auto; }
+  .page-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-6); flex-wrap: wrap; }
+  .page-head h1 { font-size: 1.7rem; }
+  .plan-limit-note { font-size: 0.85rem; color: var(--color-mist); margin-top: var(--space-1); }
+  .contact-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4) 0; border-bottom: 1px solid var(--color-border); }
+  .contact-row:last-child { border-bottom: none; }
+  .avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--color-surface); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; }
+  .contact-row .meta { flex: 1; min-width: 0; }
+  .contact-row .meta .title { font-weight: 700; font-size: 0.95rem; }
+  .contact-row .meta .sub { font-size: 0.85rem; color: var(--color-mist); }
+  .icon-btn { width: 36px; height: 36px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: var(--color-mist); flex-shrink: 0; }
+  .icon-btn:hover { background: var(--color-alert-soft); color: var(--color-alert); }
+  .icon-btn svg { width: 18px; height: 18px; }
+  .add-form { display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: flex-end; }
+  .add-form .field { flex: 1; min-width: 160px; margin-bottom: 0; }
+</style>
+</head>
+<body>
+<div id="nav-mount"></div>
+
+<main class="page-wrap">
+  <div id="contacts-skeleton" data-skeleton>
+    <div class="skeleton skel-title"></div>
+    <div class="skeleton skel-card mt-5" style="height:150px;"></div>
+    <div class="skeleton skel-card mt-4" style="height:220px;"></div>
+  </div>
+
+  <div id="contacts-content" hidden>
+    <div class="page-head">
+      <div>
+        <h1>Trusted contacts</h1>
+        <p class="muted">Alerted with your live location the moment an SOS fires.</p>
+        <p class="plan-limit-note" id="limit-note"></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="font-size:1rem; margin-bottom: var(--space-4);">Add a contact</h3>
+      <form class="add-form" id="add-contact-form" novalidate>
+        <div class="field">
+          <label for="c-name">Name</label>
+          <div class="input-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <input type="text" id="c-name" placeholder="Contact's name" required>
+          </div>
+          <div class="field-error" id="c-name-error">Please enter a name.</div>
+        </div>
+        <div class="field">
+          <label for="c-phone">Phone</label>
+          <div class="input-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.68 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.32 1.85.55 2.81.68A2 2 0 0 1 22 16.92z"/></svg>
+            <input type="tel" id="c-phone" placeholder="082 123 4567" required>
+          </div>
+          <div class="field-error" id="c-phone-error">Please enter a valid phone number.</div>
+        </div>
+        <button type="submit" class="btn btn-primary" id="add-contact-btn">Add contact</button>
+      </form>
+    </div>
+
+    <div class="card mt-4">
+      <h3 style="font-size:1rem; margin-bottom: var(--space-2);">Your contacts</h3>
+      <div id="contacts-list"></div>
+    </div>
+  </div>
+</main>
+
+<div id="footer-mount"></div>
+
+<script src="js/db.js"></script>
+<script src="js/ui.js"></script>
+<script>
+  const user = requireAuth();
+
+  function contactLimit() {
+    return user.plan === 'Free' ? 1 : Infinity;
+  }
+
+  function renderContacts() {
+    const contacts = getContacts(user.email);
+    const list = document.getElementById('contacts-list');
+    const limit = contactLimit();
+    document.getElementById('limit-note').textContent =
+      limit === Infinity ? `${contacts.length} contact${contacts.length === 1 ? '' : 's'} · unlimited on your ${user.plan} plan`
+                          : `${contacts.length} of ${limit} used on the Free plan — upgrade for unlimited contacts`;
+
+    if (contacts.length === 0) {
+      list.innerHTML = `<div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        <p>No trusted contacts yet. Add someone who should be alerted in an emergency.</p>
+      </div>`;
+      return;
+    }
+    list.innerHTML = contacts.map(c => `
+      <div class="contact-row">
+        <div class="avatar">${c.name.trim().charAt(0).toUpperCase()}</div>
+        <div class="meta"><div class="title">${c.name}</div><div class="sub">${c.phone}</div></div>
+        <button class="icon-btn" data-remove="${c.id}" aria-label="Remove ${c.name}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+        </button>
+      </div>
+    `).join('');
+
+    list.querySelectorAll('[data-remove]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        removeContact(user.email, btn.getAttribute('data-remove'));
+        showToast('info', 'Contact removed', 'This person will no longer be alerted in an emergency.');
+        renderContacts();
+      });
+    });
+  }
+
+  if (user) {
+    renderContacts();
+    revealContent('#contacts-content', { skeletonSelector: '#contacts-skeleton', delay: 400 });
+
+    const form = document.getElementById('add-contact-form');
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const nameInput = document.getElementById('c-name');
+      const phoneInput = document.getElementById('c-phone');
+      const nameErr = document.getElementById('c-name-error');
+      const phoneErr = document.getElementById('c-phone-error');
+      nameInput.classList.remove('input-error'); nameErr.classList.remove('show');
+      phoneInput.classList.remove('input-error'); phoneErr.classList.remove('show');
+
+      let valid = true;
+      if (!nameInput.value.trim() || nameInput.value.trim().length < 2) {
+        nameInput.classList.add('input-error'); nameErr.classList.add('show'); valid = false;
+      }
+      if (!/^[\d\s()+-]{7,}$/.test(phoneInput.value.trim())) {
+        phoneInput.classList.add('input-error'); phoneErr.classList.add('show'); valid = false;
+      }
+      if (!valid) { showToast('error', 'Check the form', 'Please fix the highlighted fields.'); return; }
+
+      const current = getContacts(user.email);
+      if (current.length >= contactLimit()) {
+        showToast('error', 'Contact limit reached', 'The Free plan allows 1 trusted contact. Upgrade to add more.');
+        return;
+      }
+
+      addContact(user.email, { name: nameInput.value, phone: phoneInput.value });
+      showToast('success', 'Contact added', `${nameInput.value.trim()} will now be alerted in an emergency.`);
+      form.reset();
+      renderContacts();
+    });
+  }
+
+  mountNavAndFooter('contacts');
+</script>
+</body>
+</html>
